@@ -1,7 +1,7 @@
 use crate::Utils::vec3::*;
 use crate::Utils::util::clamp;
 
-pub fn write_color(output: &mut String, color: &Color) {
+pub fn write_color(output: &mut Vec<Vec<String>>, color: &Color, x: usize, y: usize) {
     let r = color.r();
     let g = color.g();
     let b = color.b();
@@ -13,5 +13,6 @@ pub fn write_color(output: &mut String, color: &Color) {
 
 
     let rgb = r.to_string() +" "+ &g.to_string() +" "+ &b.to_string() + "\n";
-    output.push_str(&rgb);
+    output[x][y] = rgb;
+    //output.push_str(&rgb);
 }

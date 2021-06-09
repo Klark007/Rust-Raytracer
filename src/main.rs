@@ -194,8 +194,11 @@ fn main() {
     )));*/
 
     const ASPECT_RATIO: f64 = 3.0/2.0;
-    const IMG_WIDTH: i32= 1200;
-    const IMG_HEIGHT: i32 = ((IMG_WIDTH as f64) / ASPECT_RATIO) as i32;
+    const IMG_WIDTH: usize= 400;
+    const IMG_HEIGHT: usize = ((IMG_WIDTH as f64) / ASPECT_RATIO) as usize;
+
+    // array to save values into
+    let mut img: Vec<Vec<String>> = vec![vec!["".to_string(); IMG_HEIGHT]; IMG_WIDTH];
 
     const SAMPLE_PER_PIXEL: i32 = 10;
     const MAX_DEPTH: i32 = 50;
@@ -278,7 +281,7 @@ fn main() {
             }
             color = color / (SAMPLE_PER_PIXEL as f64);
 
-            write_color(&mut text, &color);
+            write_color(&mut img, &color, i, j);
             
             durations[3] = durations[3] + overall_start.elapsed();
             iterations[3] += 1;
@@ -288,6 +291,12 @@ fn main() {
     }
     println!("Finished");
 
+    // write from array to String
+    for j in (0..IMG_HEIGHT).rev() {
+        for i in 0..IMG_WIDTH {
+            text.push_str(&img[i][j]);
+        }
+    }
 
     /*let v1 = Vec3::from_values(3.0, -3.0, 1.0);
     let v2 = Vec3::from_values(4.0, 9.0, 2.0);
