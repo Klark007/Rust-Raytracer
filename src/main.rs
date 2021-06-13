@@ -43,8 +43,10 @@ fn random_scene() -> HittableCollection {
                     let albedo = Color::random(0.0, 1.0) * Color::random(0.0, 1.0);
                     let sphere_material: Box<dyn Material> = Box::new(Lambertian::from_values(&albedo));
 
+                    let center2 = center + Vec3::from_floats(0.0, get_rand_f64(0.0, 0.5), 0.0);
+
                     world.add(
-                        Box::new(Sphere::from_values(&center, 0.2, &sphere_material))
+                        Box::new(MovingSphere::from_values(&center, &center2, 0.0, 1.0, 0.2, &sphere_material))
                     );
                 } else if choose_mat < 0.95 {
                     // metal
@@ -193,14 +195,14 @@ fn main() {
         &material_right
     )));*/
 
-    const ASPECT_RATIO: f64 = 3.0/2.0;
+    const ASPECT_RATIO: f64 = 16.0/9.0;
     const IMG_WIDTH: usize= 400;
     const IMG_HEIGHT: usize = ((IMG_WIDTH as f64) / ASPECT_RATIO) as usize;
 
     // array to save values into
     let mut img: Vec<Vec<String>> = vec![vec!["".to_string(); IMG_HEIGHT]; IMG_WIDTH];
 
-    const SAMPLE_PER_PIXEL: i32 = 10;
+    const SAMPLE_PER_PIXEL: i32 = 75;
     const MAX_DEPTH: i32 = 50;
 
 
@@ -214,14 +216,15 @@ fn main() {
     let dist_to_focus = 10.0;
 
     // Camera
-    let camera = Camera::new(
+    let camera = Camera::from_values_time(
         &look_from,
         &look_at,
         &vup,
         20.0, 
         ASPECT_RATIO,
         apertue,
-        dist_to_focus
+        dist_to_focus,
+        0.0, 1.0
     );
 
     

@@ -29,7 +29,7 @@ impl Material for Lambertian {
             scatter_direction = hitrecord.normal;
         }
         
-        *scattered = Ray::from_values(&hitrecord.p, &scatter_direction);
+        *scattered = Ray::from_values_time(&hitrecord.p, &scatter_direction, ray_in.time());
         *attenuation = self.albedo;
 
         true

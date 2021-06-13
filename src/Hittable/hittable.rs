@@ -10,7 +10,6 @@ pub struct Hitrecord{
     pub material: Box<dyn Material>,
     pub t: f64,
     pub front_face: bool,
-    
 }
 
 impl Hitrecord {
