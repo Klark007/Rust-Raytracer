@@ -1,5 +1,6 @@
-use std::ops::*;
 use crate::Utils::util::*;
+
+use std::ops::*;
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub struct Vec3 {
@@ -74,6 +75,23 @@ impl Vec3 {
 
     pub fn b(&self) -> f64 {
         self.z
+    }
+
+    fn ind(&self, index: usize) -> Option<f64> {
+        match index {
+            0 => return Some(self.x()),
+            1 => return Some(self.y()),
+            2 => return Some(self.z()),
+            _ => return None, 
+        }
+    }
+
+    pub fn at(&self, index: usize) -> f64 {
+        let val = self.ind(index);
+        match val {
+            Some(p) => return p,
+            None => panic!("Index out of bound with {} for Vec3", index),
+        }
     }
 }
 

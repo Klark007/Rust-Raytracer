@@ -1,8 +1,8 @@
+use crate::Utils::util::*;
+
 use crate::Materials::material::*;
 
-use crate::Utils::vec3::*;
-use crate::ray::*;
-use crate::Hittable::hittable::*;
+use crate::Collisions::hittable::*;
 
 #[derive(Clone)]
 pub struct Metal {

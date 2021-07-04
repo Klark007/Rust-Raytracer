@@ -1,6 +1,4 @@
-use crate::Utils::vec3::*;
 use crate::Utils::util::*;
-use crate::ray::*;
 
 pub struct Camera {
     origin: Point3,

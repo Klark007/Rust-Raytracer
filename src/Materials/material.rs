@@ -1,7 +1,7 @@
 
-use crate::Utils::vec3::*;
-use crate::ray::*;
-use crate::Hittable::hittable::*;
+use crate::Utils::util::*;
+
+use crate::Collisions::hittable::*;
 
 pub trait Material {
     fn scatter(&self, ray_in: &Ray, hitrecord: &Hitrecord, attenuation: &mut Color, scattered: &mut Ray) -> bool; 

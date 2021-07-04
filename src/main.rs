@@ -1,4 +1,6 @@
-//use raylib::prelude::*;
+//https://dev.to/rncrtr/multi-select-in-visual-studio-code-19k2
+
+
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
@@ -6,8 +8,11 @@ use std::path::Path;
 mod Utils;
 use Utils::*;
 
-mod Hittable;
-use Hittable::*;
+mod Collisions;
+use Collisions::*;
+
+mod Materials;
+use Materials::*;
 
 mod ray;
 use ray::*;
@@ -15,8 +20,7 @@ use ray::*;
 mod camera;
 use camera::*;
 
-mod Materials;
-use Materials::*;
+
 
 use std::time::{Duration, Instant}; // for timing function calss
 
@@ -88,34 +92,21 @@ fn random_scene() -> HittableCollection {
 }
 
 
-fn ray_color(ray: &Ray, world: &HittableTrait, depth: i32, durations: &mut [Duration], iterations: &mut[u32]) -> Color {
+fn ray_color(ray: &Ray, world: &HittableTrait, depth: i32) -> Color {
     if depth <= 0 {
         return Color::new();
     }
 
     let mut hit_record = Hitrecord::new();
-    let hit_start = Instant::now();
     if world.hit(&ray, 0.001, 1000.0, &mut hit_record) {
-        durations[1] = durations[1] + hit_start.elapsed();
-        iterations[1] += 1;
 
         let mut scattered = Ray::new();
         let mut attenuation = Color::new();
 
-        let scatter_start = Instant::now();
         if hit_record.material.scatter(&ray, &hit_record, &mut attenuation, &mut scattered) {
-            durations[2] = durations[2] + scatter_start.elapsed();
-            iterations[2] += 1;
-
-            return attenuation * ray_color(&scattered, world, depth-1, durations, iterations);
-        } else {
-            durations[2] = durations[2] + scatter_start.elapsed();
-            iterations[2] += 1;
+            return attenuation * ray_color(&scattered, world, depth-1);
         }
         return Color::new();
-    } else {
-        durations[1] = durations[1] + hit_start.elapsed();
-        iterations[1] += 1;
     }
 
     // blue background
@@ -196,17 +187,17 @@ fn main() {
     )));*/
 
     const ASPECT_RATIO: f64 = 16.0/9.0;
-    const IMG_WIDTH: usize= 400;
+    const IMG_WIDTH: usize= 1024;
     const IMG_HEIGHT: usize = ((IMG_WIDTH as f64) / ASPECT_RATIO) as usize;
 
     // array to save values into
     let mut img: Vec<Vec<String>> = vec![vec!["".to_string(); IMG_HEIGHT]; IMG_WIDTH];
 
     const SAMPLE_PER_PIXEL: i32 = 75;
-    const MAX_DEPTH: i32 = 50;
+    const MAX_DEPTH: i32 = 25;
 
-
-    let world = random_scene();
+    let mut scene = random_scene();
+    let world = BVH::bvh_from_collection(&mut scene, 0.0, 1.0); //random_scene();
 
     let look_from = Point3::from_ints(13,2,3);
     let look_at   = Point3::from_ints(0,0,0);
@@ -226,10 +217,6 @@ fn main() {
         dist_to_focus,
         0.0, 1.0
     );
-
-    
-    let mut durations: [Duration; 5] = [Duration::new(0,0); 5];
-    let mut iterations: [u32; 5] = [0; 5];
      
     let mut text = String::from("P3\n"); // colors in ASCII
     let width_height_string = IMG_WIDTH.to_string() + " " + &IMG_HEIGHT.to_string(); // dimension
@@ -242,22 +229,6 @@ fn main() {
     for j in (0..IMG_HEIGHT).rev() {
         println!("{} scanlines remaining", j);
 
-        /*if iterations[0] != 0 {
-            println!("{:?} ray creation", durations[0] / iterations[0]);
-        }
-        if iterations[1] != 0 {
-            println!("{:?} world intersection", durations[1] / iterations[1]);
-        }
-        if iterations[2] != 0 {
-            println!("{:?} scattering", durations[2] / iterations[2]);
-        }
-        if iterations[3] != 0 {
-            println!("{:?} s overall (per pixel)", (durations[3] / iterations[3]).as_secs_f64());
-        }
-        if iterations[4] != 0 {
-            println!("{:?} s overall (per scanline)", (durations[4] / iterations[4]).as_secs_f64());
-        }
-        println!("");*/
 
         let start_scanline = Instant::now();
         for i in 0..IMG_WIDTH {
@@ -277,20 +248,13 @@ fn main() {
                 // measure time for get ray
                 let ray_start = Instant::now();
                 let ray = camera.get_ray(u, v);
-                durations[0] = durations[0] + ray_start.elapsed();
-                iterations[0] += 1;
 
-                color = color + ray_color(&ray, &world, MAX_DEPTH, &mut durations, &mut iterations);
+                color = color + ray_color(&ray, &world, MAX_DEPTH);
             }
             color = color / (SAMPLE_PER_PIXEL as f64);
 
             write_color(&mut img, &color, i, j);
-            
-            durations[3] = durations[3] + overall_start.elapsed();
-            iterations[3] += 1;
         }
-        durations[4] = durations[4] + start_scanline.elapsed();
-        iterations[4] += 1;
     }
     println!("Finished");
 
