@@ -24,6 +24,14 @@ impl Sphere {
             material: (*mat).clone(),
         }
     }
+
+    fn sphere_uv(p: &Point3, u: &mut f64, v: &mut f64) {
+        let phi = p.z().atan2(-p.x()) + PI();
+        let theta = (-p.y()).acos();
+
+        *u = phi / (2.0*PI());
+        *v = theta / PI();
+    }
 }
 
 impl HittableTrait for Sphere {
@@ -50,8 +58,9 @@ impl HittableTrait for Sphere {
 
         record.t = root;
         record.p = ray.at(record.t);
-        let outward_normal = (record.p- self.center) / self.radius;
+        let outward_normal = (record.p - self.center) / self.radius;
         record.set_face_normal(&ray, &outward_normal);
+        Sphere::sphere_uv(&record.p, &mut record.u, &mut record.v);
         record.material = self.material.clone();
 
         return true;

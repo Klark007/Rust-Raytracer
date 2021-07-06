@@ -14,6 +14,9 @@ use Collisions::*;
 mod Materials;
 use Materials::*;
 
+mod Textures;
+use Textures::*;
+
 mod ray;
 use ray::*;
 
@@ -28,7 +31,7 @@ use std::time::{Duration, Instant}; // for timing function calss
 fn random_scene() -> HittableCollection {
     let mut world = HittableCollection::new();
 
-    let ground_material: Box<dyn Material> = Box::new(Lambertian::from_values(&Color::from_floats(0.5, 0.5, 0.5)));
+    let ground_material: Box<dyn Material> = Box::new(Lambertian::from_color(&Color::from_floats(0.5, 0.5, 0.5)));
     world.add(Box::new(Sphere::from_values(
         &Vec3::from_ints(0, -1000, 0),
         1000.0, 
@@ -45,7 +48,7 @@ fn random_scene() -> HittableCollection {
                 if choose_mat < 0.8 {
                     // diffuse
                     let albedo = Color::random(0.0, 1.0) * Color::random(0.0, 1.0);
-                    let sphere_material: Box<dyn Material> = Box::new(Lambertian::from_values(&albedo));
+                    let sphere_material: Box<dyn Material> = Box::new(Lambertian::from_color(&albedo));
 
                     let center2 = center + Vec3::from_floats(0.0, get_rand_f64(0.0, 0.5), 0.0);
 
@@ -77,7 +80,7 @@ fn random_scene() -> HittableCollection {
         Box::new(Sphere::from_values(&Vec3::from_ints(0, 1, 0), 1.0, &material1))
     );
 
-    let material2: Box<dyn Material> = Box::new(Lambertian::from_values(&Color::from_floats(0.4, 0.2, 0.1)));
+    let material2: Box<dyn Material> = Box::new(Lambertian::from_color(&Color::from_floats(0.4, 0.2, 0.1)));
     world.add(
         Box::new(Sphere::from_values(&Vec3::from_ints(-4, 1, 0), 1.0, &material2))
     );
@@ -124,9 +127,9 @@ fn main() {
 
     let mut world = HittableCollection::new();
 
-    let material_ground: Box<dyn Material> = Box::new(Lambertian::from_values(&Color::from_floats(0.8, 0.8, 0.0)));
+    let material_ground: Box<dyn Material> = Box::new(Lambertian::from_color(&Color::from_floats(0.8, 0.8, 0.0)));
     let material_left: Box<dyn Material> = Box::new(Dielectric::from_values(1.5));
-    let material_middle: Box<dyn Material> = Box::new(Lambertian::from_values(&Color::from_floats(0.2, 0.8, 0.1)));
+    let material_middle: Box<dyn Material> = Box::new(Lambertian::from_color(&Color::from_floats(0.2, 0.8, 0.1)));
     let material_right: Box<dyn Material> = Box::new(Metal::from_values(&Color::from_floats(0.7, 0.3, 0.3), 0.5));
 
     world.add(Box::new(Sphere::from_values(
@@ -171,8 +174,8 @@ fn main() {
 
     /*let R = (std::f64::consts::PI /4.0).cos();
 
-    let material_left: Box<dyn Material>  = Box::new(Lambertian::from_values(&Color::from_values(0.0, 0.0, 1.0)));
-    let material_right: Box<dyn Material> = Box::new(Lambertian::from_values(&Color::from_values(1.0, 0.0, 0.0)));
+    let material_left: Box<dyn Material>  = Box::new(Lambertian::from_color(&Color::from_values(0.0, 0.0, 1.0)));
+    let material_right: Box<dyn Material> = Box::new(Lambertian::from_color(&Color::from_values(1.0, 0.0, 0.0)));
 
     world.add(Box::new(Sphere::from_values(
         &Vec3::from_values(-R, 0.0, -1.0),
@@ -187,7 +190,7 @@ fn main() {
     )));*/
 
     const ASPECT_RATIO: f64 = 16.0/9.0;
-    const IMG_WIDTH: usize= 1024;
+    const IMG_WIDTH: usize= 400;
     const IMG_HEIGHT: usize = ((IMG_WIDTH as f64) / ASPECT_RATIO) as usize;
 
     // array to save values into

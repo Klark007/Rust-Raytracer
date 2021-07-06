@@ -3,7 +3,11 @@ pub use crate::Utils::vec3::*;
 pub use crate::ray::*;
 
 pub fn degrees_to_radian(degrees: f64) -> f64 {
-    return degrees * std::f64::consts::PI / 180.0;
+    return degrees * PI() / 180.0;
+}
+
+pub fn PI() -> f64 {
+    std::f64::consts::PI
 }
 
 pub fn get_rand_int(min: i32, max: i32) -> i32 {

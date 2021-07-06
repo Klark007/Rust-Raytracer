@@ -1,22 +1,27 @@
 use crate::Utils::util::*;
 
 use crate::Materials::material::*;
+use crate::Textures::texture::*;
 
 use crate::Collisions::hittable::*;
 
-#[derive(Clone)]
 pub struct Lambertian {
-    albedo: Color,
+    texture: Box<dyn Texture>,
 }
 
 impl Lambertian {
     pub fn new() -> Lambertian {
-        Lambertian::from_values(&Color::from_floats(0.5, 0.5, 0.5))
+        Lambertian::from_color(&Color::from_floats(0.5, 0.5, 0.5))
     }
 
-    pub fn from_values(a: &Color) -> Lambertian {
+    pub fn from_color(a: &Color) -> Lambertian {
+        let tex: Box<Texture> = Box::new(SolidTexture::from_color(a));
+        Lambertian::from_texture(&tex)
+    }
+
+    pub fn from_texture(t: &Box<dyn Texture>) -> Lambertian {
         Lambertian {
-            albedo: *a,
+            texture: (*t).clone()
         }
     }
 }
@@ -30,12 +35,19 @@ impl Material for Lambertian {
         }
         
         *scattered = Ray::from_values_time(&hitrecord.p, &scatter_direction, ray_in.time());
-        *attenuation = self.albedo;
+        
+        *attenuation = self.texture.value(hitrecord.u, hitrecord.v, &hitrecord.p);
 
         true
     }
 
     fn clone_material(&self) -> Box<dyn Material> {
         Box::new((*self).clone())
+    }
+}
+
+impl Clone for Lambertian {
+    fn clone(&self) -> Self {
+        Lambertian::from_texture(&self.texture)
     }
 }
