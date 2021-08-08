@@ -4,11 +4,13 @@ use crate::Collisions::hittable::*;
 
 use crate::Materials::material::*;
 use crate::Materials::lambertian::*;
+use crate::Materials::emmiter::*;
 
 pub struct Sphere {
     pub center: Point3,
     pub radius: f64,
     pub material: Box<dyn Material>,
+    pub emmiter: Option<Box<dyn Emmiter>>
 }
 
 impl Sphere {
@@ -22,11 +24,21 @@ impl Sphere {
             center: *cen,
             radius: rad,
             material: (*mat).clone(),
+            emmiter: None
         }
     }
 
-    fn sphere_uv(p: &Point3, u: &mut f64, v: &mut f64) {
-        let phi = p.z().atan2(-p.x()) + PI();
+    pub fn as_emmiter(cen: &Point3, rad: f64, mat: &Box<dyn Material>, emm: &Box<dyn Emmiter>) -> Sphere {
+        Sphere {
+            center: *cen,
+            radius: rad,
+            material: (*mat).clone(),
+            emmiter: Some((*emm).clone())
+        }
+    }
+ 
+    pub fn sphere_uv(p: &Point3, u: &mut f64, v: &mut f64) {
+        let phi = (-p.z()).atan2(p.x()) + PI();
         let theta = (-p.y()).acos();
 
         *u = phi / (2.0*PI());
@@ -60,8 +72,13 @@ impl HittableTrait for Sphere {
         record.p = ray.at(record.t);
         let outward_normal = (record.p - self.center) / self.radius;
         record.set_face_normal(&ray, &outward_normal);
-        Sphere::sphere_uv(&record.p, &mut record.u, &mut record.v);
+
+        Sphere::sphere_uv(&outward_normal, &mut record.u, &mut record.v);
         record.material = self.material.clone();
+        record.emmiter = match &self.emmiter {
+            Some(emm) => Some((*emm).clone()),
+            None => None,
+        };
 
         return true;
     }
@@ -82,7 +99,26 @@ mod tests {
     use crate::Collisions::sphere::*;
 
     #[test]
-    fn bounding_box_test() {
+    fn uv_test() {
+        let mut u = 0.0;
+        let mut v = 0.0;
 
+        let x = Vec3::from_ints(1, 0, 0);
+        let y = Vec3::from_ints(0, 1, 0);
+        let z = Vec3::from_ints(0, 0, 1);
+
+        Sphere::sphere_uv(&x, &mut u, &mut v);
+        assert_eq!(u, 0.5);
+        assert_eq!(v, 0.5);
+
+        Sphere::sphere_uv(&y, &mut u, &mut v);
+        assert_eq!(u, 0.5);
+        assert_eq!(v, 1.0);
+
+        Sphere::sphere_uv(&z, &mut u, &mut v);
+        assert_eq!(u, 0.25);
+        assert_eq!(v, 0.5);
+
+        
     }
 }

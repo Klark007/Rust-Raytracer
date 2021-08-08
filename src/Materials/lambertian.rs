@@ -11,7 +11,7 @@ pub struct Lambertian {
 
 impl Lambertian {
     pub fn new() -> Lambertian {
-        Lambertian::from_color(&Color::from_floats(0.5, 0.5, 0.5))
+        Lambertian::from_color(&Color::from_ints(0,0,0))
     }
 
     pub fn from_color(a: &Color) -> Lambertian {
@@ -21,7 +21,7 @@ impl Lambertian {
 
     pub fn from_texture(t: &Box<dyn Texture>) -> Lambertian {
         Lambertian {
-            texture: (*t).clone()
+            texture: (*t).clone(),
         }
     }
 }

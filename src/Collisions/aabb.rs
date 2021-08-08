@@ -117,6 +117,6 @@ mod tests {
         let inv_bounding_box = AABB::from_values(&Point3::from_ints(1, 1, 1), &Point3::from_ints(-1, -1, -1));
         
         let x_hit = Ray::from_values(&Point3::from_ints(2, 0, 0), &Vec3::from_ints(-1, 0, 0));
-        assert!(inv_bounding_box.hit(&x_hit, 0.0, 1000.0));
+        assert!(!inv_bounding_box.hit(&x_hit, 0.0, 1000.0));
     }
 }

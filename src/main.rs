@@ -31,7 +31,8 @@ use std::time::{Duration, Instant}; // for timing function calss
 fn random_scene() -> HittableCollection {
     let mut world = HittableCollection::new();
 
-    let ground_material: Box<dyn Material> = Box::new(Lambertian::from_color(&Color::from_floats(0.5, 0.5, 0.5)));
+    let checker_texture: Box<dyn Texture> = Box::new(CheckerTexture::from_colors(&Color::from_floats(0.2,0.3,0.1), &Color::from_floats(0.9,0.9,0.9), 5.0));
+    let ground_material: Box<dyn Material> = Box::new(Lambertian::from_texture(&checker_texture));
     world.add(Box::new(Sphere::from_values(
         &Vec3::from_ints(0, -1000, 0),
         1000.0, 
@@ -94,23 +95,53 @@ fn random_scene() -> HittableCollection {
     return world;
 }
 
+fn earth_globe() -> HittableCollection {
+    let mut world = HittableCollection::new();
 
-fn ray_color(ray: &Ray, world: &HittableTrait, depth: i32) -> Color {
+    let texture: Box<dyn Texture> = Box::new(ImageTexture::from_name("./earthmap.jpg"));
+    let material: Box<dyn Material> = Box::new(Lambertian::from_texture(&texture));
+
+    world.add(
+        Box::new(Sphere::from_values(&Vec3::new(), 2.0, &material))
+    );
+
+    let emmitter_material: Box<dyn Material> = Box::new(Lambertian::new());
+    let diffuse_emmiter: Box<dyn Emmiter> = Box::new(DiffuseLight::from_color(&Color::from_ints(10,10,10)));
+
+    world.add(
+        Box::new(Sphere::as_emmiter(&Vec3::from_ints(0, 5, 0), 0.5, &emmitter_material, &diffuse_emmiter))
+    );
+    
+    return world;
+}
+
+
+fn ray_color(ray: &Ray, background_color: Color, world: &HittableTrait, depth: i32) -> Color {
     if depth <= 0 {
         return Color::new();
     }
 
     let mut hit_record = Hitrecord::new();
-    if world.hit(&ray, 0.001, 1000.0, &mut hit_record) {
-
-        let mut scattered = Ray::new();
-        let mut attenuation = Color::new();
-
-        if hit_record.material.scatter(&ray, &hit_record, &mut attenuation, &mut scattered) {
-            return attenuation * ray_color(&scattered, world, depth-1);
-        }
-        return Color::new();
+    if !world.hit(&ray, 0.001, 1000.0, &mut hit_record) {
+        return background_color;
     }
+
+    let mut scattered = Ray::new();
+    let mut attenuation = Color::new();
+
+    let emmited = match hit_record.clone().emmiter {
+        Some(emm) => emm.emmit(hit_record.u, hit_record.v, &hit_record.p),
+        None => Color::new(),
+    };
+
+    // use short circuit of || 
+    // we stop if even if we hit an object, if that object has an attenuation of (0,0,0)
+    if !hit_record.material.scatter(&ray, &hit_record, &mut attenuation, &mut scattered) || attenuation == Color::new() {
+        return emmited;
+    }
+
+    return emmited + attenuation * ray_color(&scattered, background_color, world, depth-1);
+    
 
     // blue background
     let unit_dir = unit_vector(ray.direction());
@@ -119,112 +150,66 @@ fn ray_color(ray: &Ray, world: &HittableTrait, depth: i32) -> Color {
 }
 
 fn main() {
-    // world
-    /*
-    const ASPECT_RATIO: f64 = 16.0 / 9.0;
-    const IMG_WIDTH: i32= 400;
-    const IMG_HEIGHT: i32 = ((IMG_WIDTH as f64) / ASPECT_RATIO) as i32;
-
-    let mut world = HittableCollection::new();
-
-    let material_ground: Box<dyn Material> = Box::new(Lambertian::from_color(&Color::from_floats(0.8, 0.8, 0.0)));
-    let material_left: Box<dyn Material> = Box::new(Dielectric::from_values(1.5));
-    let material_middle: Box<dyn Material> = Box::new(Lambertian::from_color(&Color::from_floats(0.2, 0.8, 0.1)));
-    let material_right: Box<dyn Material> = Box::new(Metal::from_values(&Color::from_floats(0.7, 0.3, 0.3), 0.5));
-
-    world.add(Box::new(Sphere::from_values(
-        &Vec3::from_floats(0.0, -100.5, -1.0),
-        100.0, 
-        &material_ground
-    )));
-
-    // negative radius changes inside and outside
-    world.add(Box::new(Sphere::from_values(
-        &Vec3::from_ints(-1, 0, -1),
-        0.5, 
-        &material_left
-    )));
-    world.add(Box::new(Sphere::from_values(
-        &Vec3::from_ints(-1, 0, -1),
-        -0.4, 
-        &material_left
-    )));
-
-    world.add(Box::new(Sphere::from_values(
-        &Vec3::from_ints(1, 0, -1),
-        0.5, 
-        &material_right
-    )));
-
-    world.add(Box::new(Sphere::from_values(
-        &Vec3::from_ints(0, 0, -1),
-        0.5, 
-        &material_middle
-    )));
-    
-    
-    let look_from = Point3::from_ints(3, 3, 2);
-    let look_at   = Point3::from_ints(0, 0, -1);
-    let vup = Vec3::from_ints(0, 1, 0);
-
-    let apertue = 1.25;
-    let dist_to_focus = (look_from-look_at).length();
-    
-    */
-
-    /*let R = (std::f64::consts::PI /4.0).cos();
-
-    let material_left: Box<dyn Material>  = Box::new(Lambertian::from_color(&Color::from_values(0.0, 0.0, 1.0)));
-    let material_right: Box<dyn Material> = Box::new(Lambertian::from_color(&Color::from_values(1.0, 0.0, 0.0)));
-
-    world.add(Box::new(Sphere::from_values(
-        &Vec3::from_values(-R, 0.0, -1.0),
-        R, 
-        &material_left
-    )));
-
-    world.add(Box::new(Sphere::from_values(
-        &Vec3::from_values(R, 0.0, -1.0),
-        R, 
-        &material_right
-    )));*/
-
     const ASPECT_RATIO: f64 = 16.0/9.0;
-    const IMG_WIDTH: usize= 400;
+    const IMG_WIDTH: usize= 200;
     const IMG_HEIGHT: usize = ((IMG_WIDTH as f64) / ASPECT_RATIO) as usize;
 
     // array to save values into
     let mut img: Vec<Vec<String>> = vec![vec!["".to_string(); IMG_HEIGHT]; IMG_WIDTH];
 
-    const SAMPLE_PER_PIXEL: i32 = 75;
-    const MAX_DEPTH: i32 = 25;
+    let mut text = String::from("P3\n"); // colors in ASCII
+    let width_height_string = IMG_WIDTH.to_string() + " " + &IMG_HEIGHT.to_string(); // dimension
+    text.push_str(&width_height_string);
+    text.push_str("\n255\n"); // max color
 
-    let mut scene = random_scene();
-    let world = BVH::bvh_from_collection(&mut scene, 0.0, 1.0); //random_scene();
+    // World
+    let world; //= BVH::bvh_from_collection(&mut scene, 0.0, 1.0); //random_scene();
+    let mut scene: HittableCollection; 
 
-    let look_from = Point3::from_ints(13,2,3);
-    let look_at   = Point3::from_ints(0,0,0);
-    let vup = Vec3::from_ints(0, 1, 0);
+    let mut look_from; //= Point3::from_ints(13,2,3);
+    let mut look_at;   //= Point3::from_ints(0,0,0);
+    let mut vfov = 40.0;
+    let mut apertue = 0.0;
+    let mut background_color;
 
-    let apertue = 0.1;
-    let dist_to_focus = 10.0;
+    match 0 {
+        1 => {
+            scene = random_scene();
+            look_from = Point3::from_ints(13,2,3);
+            look_at = Point3::from_ints(0,0,0);
+            vfov = 20.0;
+            apertue = 0.1;
+            background_color = Color::from_floats(0.7, 0.8, 1.0);
+        },
+        _ => {
+            scene = earth_globe();
+            look_from = Point3::from_ints(13,2,3);
+            look_at = Point3::from_ints(0,0,0);
+            vfov = 20.0;
+            background_color = Color::from_floats(0.0, 0.0, 0.0);
+        }
+    }
+    world = BVH::bvh_from_collection(&mut scene, 0.0, 1.0);
+
 
     // Camera
+    let dist_to_focus = 10.0;
+
+    let vup = Vec3::from_ints(0, 1, 0);
+
     let camera = Camera::from_values_time(
         &look_from,
         &look_at,
         &vup,
-        20.0, 
+        vfov, 
         ASPECT_RATIO,
         apertue,
         dist_to_focus,
         0.0, 1.0
     );
-     
-    let mut text = String::from("P3\n"); // colors in ASCII
-    let width_height_string = IMG_WIDTH.to_string() + " " + &IMG_HEIGHT.to_string(); // dimension
-    text.push_str(&width_height_string);
-    text.push_str("\n255\n"); // max color
+
+    const SAMPLE_PER_PIXEL: i32 = 100;
+    const MAX_DEPTH: i32 = 5;
 
 
     
@@ -252,7 +237,7 @@ fn main() {
                 let ray_start = Instant::now();
                 let ray = camera.get_ray(u, v);
 
-                color = color + ray_color(&ray, &world, MAX_DEPTH);
+                color = color + ray_color(&ray, background_color, &world, MAX_DEPTH);
             }
             color = color / (SAMPLE_PER_PIXEL as f64);
 

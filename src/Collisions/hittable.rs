@@ -2,6 +2,7 @@ use crate::Utils::util::*;
 
 use crate::Materials::material::*;
 use crate::Materials::lambertian::*;
+use crate::Materials::emmiter::*;
 
 pub use crate::Collisions::aabb::*;
 
@@ -10,6 +11,7 @@ pub struct Hitrecord{
     pub p: Point3,
     pub normal: Vec3,
     pub material: Box<dyn Material>,
+    pub emmiter: Option<Box<dyn Emmiter>>,
     pub t: f64,
     pub u: f64,
     pub v: f64,
@@ -26,6 +28,7 @@ impl Hitrecord {
             u: 0.0,
             v: 0.0,
             front_face: false,
+            emmiter: None,
         }
     }
 
