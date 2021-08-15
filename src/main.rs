@@ -120,10 +120,11 @@ fn simple_light() -> HittableCollection {
 
     let checker_texture: Box<dyn Texture> = Box::new(CheckerTexture::from_colors(&Color::from_floats(0.2,0.3,0.1), &Color::from_floats(0.9,0.9,0.9), 5.0));
     let material: Box<dyn Material> = Box::new(Lambertian::from_texture(&checker_texture));
+    let bottom_material: Box<dyn Material> = Box::new(Lambertian::from_color(&Color::from_floats(0.5, 0.5, 0.5)));
 
     world.add(
         Box::new(
-            Sphere::from_values(&Vec3::from_ints(0, -1000, 0), 1000.0, &material)
+            Sphere::from_values(&Vec3::from_ints(0, -1000, 0), 1000.0, &bottom_material)
         )
     );
 
@@ -133,7 +134,7 @@ fn simple_light() -> HittableCollection {
         )
     );
 
-    let emmitter_material: Box<dyn Material> = Box::new(Lambertian::new());
+    let emmitter_material: Box<dyn Material> = Box::new(Lambertian::from_color(&Color::from_ints(1,1,1)));
     let diffuse_emmiter: Box<dyn Emmiter> = Box::new(DiffuseLight::from_color(&Color::from_ints(4,4,4)));
 
     world.add(
@@ -214,8 +215,8 @@ fn main() {
             look_from = Point3::from_ints(26,3,6);
             look_at = Point3::from_ints(0,2,0);
             vfov = 20.0;
-            background_color = Color::from_floats(0.0, 0.0, 0.0);
-        }
+            background_color = Color::from_floats(0.1, 0.1, 0.1);
+        },
         _ => {
             scene = earth_globe();
             look_from = Point3::from_ints(13,2,3);
@@ -243,7 +244,7 @@ fn main() {
         0.0, 1.0
     );
 
-    const SAMPLE_PER_PIXEL: i32 = 400;
+    const SAMPLE_PER_PIXEL: i32 = 64;
     const MAX_DEPTH: i32 = 5;
 
 

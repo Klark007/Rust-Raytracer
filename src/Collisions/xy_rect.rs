@@ -68,6 +68,10 @@ impl HittableTrait for XY_Rect {
         record.set_face_normal(ray, &outward_normal);
 
         record.material = self.material.clone();
+        record.emmiter = match &self.emmiter {
+            Some(emm) => Some((*emm).clone()),
+            None => None,
+        };
         record.p = ray.at(t);
 
         return true;
