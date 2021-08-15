@@ -71,7 +71,7 @@ impl HittableTrait for Sphere {
         record.t = root;
         record.p = ray.at(record.t);
         let outward_normal = (record.p - self.center) / self.radius;
-        record.set_face_normal(&ray, &outward_normal);
+        record.set_face_normal(ray, &outward_normal);
 
         Sphere::sphere_uv(&outward_normal, &mut record.u, &mut record.v);
         record.material = self.material.clone();

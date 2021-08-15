@@ -115,6 +115,34 @@ fn earth_globe() -> HittableCollection {
     return world;
 }
 
+fn simple_light() -> HittableCollection {
+    let mut world = HittableCollection::new();
+
+    let checker_texture: Box<dyn Texture> = Box::new(CheckerTexture::from_colors(&Color::from_floats(0.2,0.3,0.1), &Color::from_floats(0.9,0.9,0.9), 5.0));
+    let material: Box<dyn Material> = Box::new(Lambertian::from_texture(&checker_texture));
+
+    world.add(
+        Box::new(
+            Sphere::from_values(&Vec3::from_ints(0, -1000, 0), 1000.0, &material)
+        )
+    );
+
+    world.add(
+        Box::new(
+            Sphere::from_values(&Vec3::from_ints(0, 2, 0), 2.0, &material)
+        )
+    );
+
+    let emmitter_material: Box<dyn Material> = Box::new(Lambertian::new());
+    let diffuse_emmiter: Box<dyn Emmiter> = Box::new(DiffuseLight::from_color(&Color::from_ints(4,4,4)));
+
+    world.add(
+        Box::new(XY_Rect::as_emmiter(3.0, 1.0, 5.0, 3.0, -2.0, &emmitter_material, &diffuse_emmiter))
+    );
+
+    return world;
+}
+
 
 fn ray_color(ray: &Ray, background_color: Color, world: &HittableTrait, depth: i32) -> Color {
     if depth <= 0 {
@@ -172,7 +200,7 @@ fn main() {
     let mut apertue = 0.0;
     let mut background_color;
 
-    match 0 {
+    match 2 {
         1 => {
             scene = random_scene();
             look_from = Point3::from_ints(13,2,3);
@@ -181,6 +209,13 @@ fn main() {
             apertue = 0.1;
             background_color = Color::from_floats(0.7, 0.8, 1.0);
         },
+        2 => {
+            scene = simple_light();
+            look_from = Point3::from_ints(26,3,6);
+            look_at = Point3::from_ints(0,2,0);
+            vfov = 20.0;
+            background_color = Color::from_floats(0.0, 0.0, 0.0);
+        }
         _ => {
             scene = earth_globe();
             look_from = Point3::from_ints(13,2,3);
@@ -208,7 +243,7 @@ fn main() {
         0.0, 1.0
     );
 
-    const SAMPLE_PER_PIXEL: i32 = 100;
+    const SAMPLE_PER_PIXEL: i32 = 400;
     const MAX_DEPTH: i32 = 5;
 
 
