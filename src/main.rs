@@ -144,6 +144,45 @@ fn simple_light() -> HittableCollection {
     return world;
 }
 
+fn cornell_box() -> HittableCollection {
+    let mut world = HittableCollection::new();
+
+    let white: Box<dyn Material> = Box::new(Lambertian::from_color(&Color::from_floats(0.8, 0.8, 0.8)));
+    let green: Box<dyn Material> = Box::new(Lambertian::from_color(&Color::from_floats(0.2, 0.5, 0.3)));
+    let red:   Box<dyn Material> = Box::new(Lambertian::from_color(&Color::from_floats(0.55, 0.1, 0.1)));
+    
+    let diffuse_emmiter: Box<dyn Emmiter> = Box::new(DiffuseLight::from_color(&Color::from_ints(4,4,4)));
+
+    // right and left
+    world.add(
+        Box::new(YZ_Rect::from_ints(0, 0, 555, 555, 555, &green))
+    );
+    world.add(
+        Box::new(YZ_Rect::from_ints(0, 0, 555, 555, 0, &red))
+    );
+
+    // floor and ceiling
+    world.add(
+        Box::new(XZ_Rect::from_ints(0, 0, 555, 555, 555, &white))
+    );
+    world.add(
+        Box::new(XZ_Rect::from_ints(0, 0, 555, 555, 0, &white))
+    );
+
+    // back
+    world.add(
+        Box::new(XY_Rect::from_ints(0, 0, 555, 555, 0, &white))
+    );
+
+    // light
+    world.add(
+        Box::new(XZ_Rect::as_emmiter(213.0, 227.0, 343.0, 332.0, 554.0, &white, &diffuse_emmiter))
+    );
+
+
+    return world; 
+}
+
 
 fn ray_color(ray: &Ray, background_color: Color, world: &HittableTrait, depth: i32) -> Color {
     if depth <= 0 {
@@ -179,8 +218,8 @@ fn ray_color(ray: &Ray, background_color: Color, world: &HittableTrait, depth: i
 }
 
 fn main() {
-    const ASPECT_RATIO: f64 = 16.0/9.0;
-    const IMG_WIDTH: usize= 200;
+    const ASPECT_RATIO: f64 = 1.0; //16.0/9.0;
+    const IMG_WIDTH: usize = 200;
     const IMG_HEIGHT: usize = ((IMG_WIDTH as f64) / ASPECT_RATIO) as usize;
 
     // array to save values into
@@ -201,7 +240,7 @@ fn main() {
     let mut apertue = 0.0;
     let mut background_color;
 
-    match 2 {
+    match 3 {
         1 => {
             scene = random_scene();
             look_from = Point3::from_ints(13,2,3);
@@ -217,6 +256,13 @@ fn main() {
             vfov = 20.0;
             background_color = Color::from_floats(0.1, 0.1, 0.1);
         },
+        3 => {
+            scene = cornell_box();
+            background_color = Color::from_floats(0.1, 0.1, 0.1);
+            look_from = Point3::from_ints(278, 278, -800);
+            look_at = Point3::from_ints(278, 278, 0);
+            vfov = 40.0
+        }
         _ => {
             scene = earth_globe();
             look_from = Point3::from_ints(13,2,3);
@@ -244,7 +290,7 @@ fn main() {
         0.0, 1.0
     );
 
-    const SAMPLE_PER_PIXEL: i32 = 64;
+    const SAMPLE_PER_PIXEL: i32 = 20;
     const MAX_DEPTH: i32 = 5;
 
 
