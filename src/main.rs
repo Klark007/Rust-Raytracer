@@ -138,7 +138,7 @@ fn simple_light() -> HittableCollection {
     let diffuse_emmiter: Box<dyn Emmiter> = Box::new(DiffuseLight::from_color(&Color::from_ints(4,4,4)));
 
     world.add(
-        Box::new(XY_Rect::as_emmiter(3.0, 1.0, 5.0, 3.0, -2.0, &emmitter_material, &diffuse_emmiter))
+        Box::new(XZ_Rect::as_emmiter(3.0, 1.0, 5.0, 3.0, -2.0, &emmitter_material, &diffuse_emmiter))
     );
 
     return world;
@@ -171,7 +171,7 @@ fn cornell_box() -> HittableCollection {
 
     // back
     world.add(
-        Box::new(XY_Rect::from_ints(0, 0, 555, 555, 0, &white))
+        Box::new(XY_Rect::from_ints(0, 0, 555, 555, 555, &white))
     );
 
     // light
@@ -181,6 +181,23 @@ fn cornell_box() -> HittableCollection {
 
 
     return world; 
+}
+
+fn test_scene() -> HittableCollection {
+    let mut world = HittableCollection::new();
+
+    let green: Box<dyn Material> = Box::new(Lambertian::from_color(&Color::from_floats(0.2, 0.75, 0.3)));
+    let red:   Box<dyn Material> = Box::new(Lambertian::from_color(&Color::from_floats(0.55, 0.1, 0.1)));
+
+    /*world.add(
+        Box::new(Sphere::from_values(&Point3::from_ints(0, 0, 0), 10.0, &red))
+    );*/
+
+    world.add(
+        Box::new(XZ_Rect::from_ints(-50, 50, -50, 50, -10, &green))
+    );
+
+    return world;
 }
 
 
@@ -240,7 +257,7 @@ fn main() {
     let mut apertue = 0.0;
     let mut background_color;
 
-    match 3 {
+    match 4 {
         1 => {
             scene = random_scene();
             look_from = Point3::from_ints(13,2,3);
@@ -258,9 +275,18 @@ fn main() {
         },
         3 => {
             scene = cornell_box();
+            
             background_color = Color::from_floats(0.1, 0.1, 0.1);
             look_from = Point3::from_ints(278, 278, -800);
             look_at = Point3::from_ints(278, 278, 0);
+            vfov = 40.0
+        }
+        4 => {
+            scene = test_scene();
+            
+            background_color = Color::from_floats(0.1, 0.1, 0.1);
+            look_from = Point3::from_ints(0, 25, -150);
+            look_at = Point3::from_ints(0, 0, 0);
             vfov = 40.0
         }
         _ => {
@@ -268,7 +294,7 @@ fn main() {
             look_from = Point3::from_ints(13,2,3);
             look_at = Point3::from_ints(0,0,0);
             vfov = 20.0;
-            background_color = Color::from_floats(0.0, 0.0, 0.0);
+            background_color = Color::from_floats(0.8, 0.2, 1.0);
         }
     }
     world = BVH::bvh_from_collection(&mut scene, 0.0, 1.0);
