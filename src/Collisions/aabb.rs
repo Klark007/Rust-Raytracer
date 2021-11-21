@@ -2,8 +2,8 @@ use crate::Utils::util::*;
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub struct AABB {
-    minimum: Point3,
-    maximum: Point3
+    pub minimum: Point3,
+    pub maximum: Point3
 }
 
 impl AABB {
