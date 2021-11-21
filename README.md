@@ -23,4 +23,4 @@ The programm can be run using cargo. First build may take a bit due to compiling
 **Pictures:**
 ![Alt text](/classic.png "Differenet materials showcase")
 ![Alt text](/earth.png "Textured material")
-![Alt text](/cornell box.png "Cornell box")
+![Alt text](/cornell_box.png "Cornell box")
